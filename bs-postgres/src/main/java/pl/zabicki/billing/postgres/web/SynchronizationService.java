@@ -19,10 +19,12 @@ public class SynchronizationService {
     EventRepository repo;
     DataReader<CsvEvent> reader = new EventReader();
 
-    public void synchronize() throws IOException {
+    public long synchronize() throws IOException {
         List<CsvEvent> records = reader.readData("data/test.csv");
         List<Event> events = EventConverter.convertEvents(records);
-
+        long totalStart = System.currentTimeMillis();
         repo.saveAll(events);
+        long totalStop = System.currentTimeMillis();
+        return totalStop - totalStart;
     }
 }

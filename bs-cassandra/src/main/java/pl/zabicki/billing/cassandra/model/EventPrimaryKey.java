@@ -6,16 +6,16 @@ import org.springframework.data.cassandra.core.cql.PrimaryKeyType;
 import org.springframework.data.cassandra.core.mapping.PrimaryKeyClass;
 import org.springframework.data.cassandra.core.mapping.PrimaryKeyColumn;
 
-//@PrimaryKeyClass
-//@AllArgsConstructor
+@PrimaryKeyClass
+@AllArgsConstructor
 public class EventPrimaryKey {
 
-    /*@PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED)
+    @PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED)
     String clientId;
 
-    @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED)
+    @PrimaryKeyColumn(type = PrimaryKeyType.PARTITIONED)
     String accountId;
 
     @PrimaryKeyColumn(type = PrimaryKeyType.CLUSTERED)
-    String id;*/
+    String id;
 }

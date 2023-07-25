@@ -21,7 +21,7 @@ public class InvoicingService {
 
     DataReader<CsvAccount> reader = new AccountReader();
 
-    public void startInvoicing() throws IOException {
+    public long startInvoicing() throws IOException {
         List<CsvAccount> accounts = reader.readData("data/accounts.csv");
         List<Event> result;
         long totalStart = System.currentTimeMillis();
@@ -35,7 +35,10 @@ public class InvoicingService {
             System.out.println("Run " + i + " invoicing time: " + (stop - start));
         }
         long totalStop = System.currentTimeMillis();
+        return totalStop - totalStart;
+    }
 
-        System.out.println("Total invoicing time: " + (totalStop - totalStart));
+    public long countEvents() {
+        return repo.countAll();
     }
 }

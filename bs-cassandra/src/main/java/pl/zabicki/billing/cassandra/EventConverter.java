@@ -15,7 +15,7 @@ public class EventConverter {
     public static Event convertEvent(CsvEvent csvEvent) {
         Event event = new Event();
         //event.setKey(new EventPrimaryKey(csvEvent.getClientId(), csvEvent.getAccountId()));
-        event.setId(UUID.randomUUID().toString());
+        event.setId(new EventPrimaryKey(csvEvent.getClientId(), csvEvent.getAccountId(), UUID.randomUUID().toString()));
         event.setApInstanceId(csvEvent.getApInstanceId());
         event.setCallingNumber(csvEvent.getCallingNumber());
         event.setCalledNumber(csvEvent.getCalledNumber());

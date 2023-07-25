@@ -9,9 +9,7 @@ import org.springframework.data.cassandra.core.mapping.Table;
 public class Event {
 
     @PrimaryKey
-    private String id;
-    private String clientId;
-    private String accountId;
+    private EventPrimaryKey id;
     private String apInstanceId;
     private String callingNumber;
     private String calledNumber;

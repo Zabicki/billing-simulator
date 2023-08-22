@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import pl.zabicki.billing.core.controller.BaseController;
 import pl.zabicki.billing.core.result.store.ResultStore;
+import pl.zabicki.billing.core.result.store.SimulationResult;
 
 import java.io.IOException;
 import java.util.List;
@@ -57,7 +58,7 @@ public class BSController extends BaseController {
         long invoicingTime = invoicingService.startInvoicing(CURRENT_DATA);
 
         log.info("Storing results in result store");
-        resultStore.saveResult(ResultStore.SimulationResult.builder()
+        resultStore.saveResult(SimulationResult.builder()
                 .synchronizationTime(synchronizationTime)
                 .invoicingTime(invoicingTime)
                 .description(request.description())
@@ -67,12 +68,12 @@ public class BSController extends BaseController {
     }
 
     @GetMapping("results")
-    public List<ResultStore.SimulationResult> getResults() {
+    public List<SimulationResult> getResults() {
         return resultStore.getResults();
     }
 
     @GetMapping("result")
-    public ResultStore.SimulationResult getLastResult() {
+    public SimulationResult getLastResult() {
         return resultStore.getLastResult();
     }
 }

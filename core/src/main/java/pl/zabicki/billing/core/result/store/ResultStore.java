@@ -12,9 +12,6 @@ import java.util.List;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -65,41 +62,6 @@ public class ResultStore {
                     StandardOpenOption.TRUNCATE_EXISTING);
         } catch (IOException e) {
             throw new RuntimeException("Unable to write data to the file.", e);
-        }
-    }
-
-    @Builder
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class SimulationResult {
-        private long synchronizationTime;
-        private long invoicingTime;
-        private String description;
-
-        // Getters and setters
-
-        public long getSynchronizationTime() {
-            return synchronizationTime;
-        }
-
-        public void setSynchronizationTime(long synchronizationTime) {
-            this.synchronizationTime = synchronizationTime;
-        }
-
-        public long getInvoicingTime() {
-            return invoicingTime;
-        }
-
-        public void setInvoicingTime(long invoicingTime) {
-            this.invoicingTime = invoicingTime;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-
-        public void setDescription(String description) {
-            this.description = description;
         }
     }
 }

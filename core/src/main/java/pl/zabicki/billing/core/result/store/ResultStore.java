@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -42,7 +43,9 @@ public class ResultStore {
             if (file.length() == 0) {
                 return new ArrayList<>();
             }
-            return objectMapper.readValue(file, new TypeReference<List<SimulationResult>>() {});
+            List<SimulationResult> results = objectMapper.readValue(file, new TypeReference<List<SimulationResult>>() {});
+            Collections.reverse(results);
+            return results;
         } catch (IOException e) {
             throw new RuntimeException("Unable to read data from the file.", e);
         }

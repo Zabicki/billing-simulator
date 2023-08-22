@@ -74,12 +74,12 @@ public class BSController extends BaseController {
     }
 
     @GetMapping("results")
-    public List<ResultStore.SimulationResult> getResults(){
+    public List<ResultStore.SimulationResult> getResults() {
         return resultStore.getResults();
     }
 
     @GetMapping("result")
-    public ResultStore.SimulationResult getLastResult(){
+    public ResultStore.SimulationResult getLastResult() {
         return resultStore.getLastResult();
     }
 }

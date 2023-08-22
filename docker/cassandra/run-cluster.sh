@@ -8,11 +8,13 @@ docker run \
     --network cassandra \
     --name cassandra1 \
     --memory=8g \
-    --volume /home/chris/Work/IdeaProjects/billing-simulator/docker/cassandra/data/cass1:/var/lib/cassandra \
-    --volume /home/chris/Work/IdeaProjects/billing-simulator/docker/cassandra/etc/cass1:/etc/cassandra \
     -p 7000:7000 \
     -p 9042:9042 \
     -d cassandra:4.0.6
+
+
+    --volume /home/chris/Work/IdeaProjects/billing-simulator/docker/cassandra/data/cass1:/var/lib/cassandra \
+    --volume /home/chris/Work/IdeaProjects/billing-simulator/docker/cassandra/etc/cass1:/etc/cassandra \
 
 # Wait for 80 seconds
 echo "Waiting for 80 seconds before starting 2nd node..."
@@ -24,9 +26,10 @@ docker run \
     --name cassandra2 \
     --memory=8g \
     -e CASSANDRA_SEEDS=172.20.0.2 \
-    --volume /home/chris/Work/IdeaProjects/billing-simulator/docker/cassandra/data/cass2:/var/lib/cassandra \
-    --volume /home/chris/Work/IdeaProjects/billing-simulator/docker/cassandra/etc/cass2:/etc/cassandra \
     -d cassandra:4.0.6
+
+    --volume /home/chris/Work/IdeaProjects/billing-simulator/docker/cassandra/data/cass2:/var/lib/cassandra \
+        --volume /home/chris/Work/IdeaProjects/billing-simulator/docker/cassandra/etc/cass2:/etc/cassandra \
 
 # Wait for 80 seconds
 echo "Waiting for 80 seconds before starting 3rd node..."

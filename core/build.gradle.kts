@@ -17,6 +17,8 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.22")
     implementation("org.apache.commons:commons-lang3:3.12.0")
     implementation("org.apache.commons:commons-csv:1.10.0")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.0.1")
+    implementation("org.slf4j:slf4j-api:1.7.25")
 
 }
 

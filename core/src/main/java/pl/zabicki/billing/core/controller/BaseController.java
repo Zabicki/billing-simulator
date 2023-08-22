@@ -1,9 +1,15 @@
 package pl.zabicki.billing.core.controller;
 
+import pl.zabicki.billing.core.result.store.ResultStore;
+
 public class BaseController {
 
     protected final String PROCESSING_TIME = "processingTime";
     protected final String COUNT = "count";
+
+    protected final String CURRENT_DATA = "202308181500";
+
+    protected final ResultStore resultStore = new ResultStore("store.json");
 
     protected String wrapJson(String name, long val) {
         return String.format("""
@@ -16,4 +22,6 @@ public class BaseController {
     protected long toSeconds(long processingTimeMillis) {
         return processingTimeMillis / 1000;
     }
+
+    protected record SimulationRequest(String description) {}
 }

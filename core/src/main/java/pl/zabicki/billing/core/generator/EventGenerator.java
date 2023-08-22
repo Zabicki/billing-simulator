@@ -1,15 +1,8 @@
 package pl.zabicki.billing.core.generator;
 
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVPrinter;
 import pl.zabicki.billing.core.data.model.CsvEvent;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -21,12 +14,14 @@ public class EventGenerator {
     public static void main(String[] args) throws IOException {
         new EventGenerator().generate(List.of(
                 new Request(10, 1, 500),
-                new Request(10, 3, 500),
-                new Request(1, 10, 10_000)
+                new Request(10, 3, 100),
+                new Request(10000, 10, 10)
+                //new Request(10_000, 1, 10)
                 ));
     }
 
     /**
+     * NOTE can generate up to 2 billion events (max int).
      * Generate events for clients and accounts specified by requests.
      * Saves events in csv file
      * TODO csv files are too big, need to seperate the files, etc. max 50/100 MB per file?
@@ -36,75 +31,131 @@ public class EventGenerator {
      *                 for 1 billing cycle
      */
     public void generate(List<Request> requests) throws IOException {
-        BufferedWriter writer = Files.newBufferedWriter(Paths.get("data/test.csv"));
-        CSVFormat format = createFormat();
+        //BufferedWriter writer = Files.newBufferedWriter(Paths.get("data/test.csv"));
+        //CSVFormat format = createFormat();
         Map<String, List<String>> clientIdToAccountIds = new HashMap<>();
+        EventWriter eventWriter = new EventWriter();
 
-        try (final CSVPrinter printer = new CSVPrinter(writer, format)) {
-            String billCycleDefId = UUID.randomUUID().toString();
-            String billCycleInstanceId = UUID.randomUUID().toString();
-            for (Request request : requests) {
-                String bProviderId = UUID.randomUUID().toString();
-                for (int i = 0; i < request.numOfClients(); i++) {
-                    String clientId = UUID.randomUUID().toString();
-                    for (int j = 0; j < request.numOfAccounts(); j++) {
-                        String accountId = UUID.randomUUID().toString();
-                        if (clientIdToAccountIds.containsKey(clientId)) {
-                            List<String> accountIds = clientIdToAccountIds.get(clientId);
-                            accountIds.add(accountId);
-                            clientIdToAccountIds.put(clientId, accountIds);
-                        } else {
-                            List<String> accountIds = new LinkedList<>();
-                            accountIds.add(accountId);
-                            clientIdToAccountIds.put(clientId, accountIds);
-                        }
+        List<CsvEvent> resultEvents = new ArrayList<>(requests.stream()
+                .mapToInt(r -> r.numOfAccounts() * r.numOfClients() * r.numOfEventsPerAccount())
+                .sum());
 
-                        for (int k = 0; k < request.numOfEventsPerAccount(); k++) {
-                            String apInstanceId = UUID.randomUUID().toString();
-                            String productId = UUID.randomUUID().toString();
-                            String rootProductId = UUID.randomUUID().toString();
-                            CsvEvent event = CsvEvent.builder()
-                                    .clientId(clientId)
-                                    .accountId(accountId)
-                                    .apInstanceId(apInstanceId)
-                                    .billingCycleDefId(billCycleDefId)
-                                    .billingCycleInstanceId(billCycleInstanceId)
-                                    .billingProviderId(bProviderId)
-                                    .calledNumber(randomNumber(100_000_000, 999_999_999))
-                                    .callingNumber(randomNumber(100_000_000, 999_999_999))
-                                    .calledPrefix(randomNumber(10, 99))
-                                    .callingPrefix(randomNumber(10, 99))
-                                    .eventBeginDate(randomDate())
-                                    .eventEndDate(randomDate())
-                                    .booleanProperty1(randomBool())
-                                    .booleanProperty2(randomBool())
-                                    .booleanProperty3(randomBool())
-                                    .booleanProperty4(randomBool())
-                                    .booleanProperty5(randomBool())
-                                    .intProperty1(randomLong())
-                                    .intProperty2(randomLong())
-                                    .intProperty3(randomLong())
-                                    .intProperty4(randomLong())
-                                    .intProperty5(randomLong())
-                                    .stringProperty1(randomString(5, 100))
-                                    .stringProperty2(randomString(5, 100))
-                                    .stringProperty3(randomString(5, 100))
-                                    .stringProperty4(randomString(5, 100))
-                                    .stringProperty5(randomString(5, 100))
-                                    .unit(randomString(2, 16))
-                                    .productId(productId)
-                                    .rootProductId(rootProductId)
-                                    .quantity(Long.parseLong(randomNumber(1, 1000)))
-                                    .build();
+        String billCycleDefId = UUID.randomUUID().toString();
+        String billCycleInstanceId = UUID.randomUUID().toString();
 
-                            printRecord(printer, event);
-                        }
+        for (Request request : requests) {
+            String bProviderId = UUID.randomUUID().toString();
+            for (int i = 0; i < request.numOfClients(); i++) {
+                String clientId = UUID.randomUUID().toString();
+                for (int j = 0; j < request.numOfAccounts(); j++) {
+                    String accountId = UUID.randomUUID().toString();
+                    if (clientIdToAccountIds.containsKey(clientId)) {
+                        List<String> accountIds = clientIdToAccountIds.get(clientId);
+                        accountIds.add(accountId);
+                        clientIdToAccountIds.put(clientId, accountIds);
+                    } else {
+                        List<String> accountIds = new LinkedList<>();
+                        accountIds.add(accountId);
+                        clientIdToAccountIds.put(clientId, accountIds);
+                    }
+
+                    for (int k = 0; k < request.numOfEventsPerAccount(); k++) {
+                        String apInstanceId = UUID.randomUUID().toString();
+                        String productId = UUID.randomUUID().toString();
+                        String rootProductId = UUID.randomUUID().toString();
+                        CsvEvent event = CsvEvent.builder()
+                                .clientId(clientId)
+                                .accountId(accountId)
+                                .apInstanceId(apInstanceId)
+                                .billingCycleDefId(billCycleDefId)
+                                .billingCycleInstanceId(billCycleInstanceId)
+                                .billingProviderId(bProviderId)
+                                .calledNumber(randomNumber(100_000_000, 999_999_999))
+                                .callingNumber(randomNumber(100_000_000, 999_999_999))
+                                .calledPrefix(randomNumber(10, 99))
+                                .callingPrefix(randomNumber(10, 99))
+                                .eventBeginDate(randomDate())
+                                .eventEndDate(randomDate())
+                                .booleanProperty1(randomBool())
+                                .booleanProperty2(randomBool())
+                                .booleanProperty3(randomBool())
+                                .booleanProperty4(randomBool())
+                                .booleanProperty5(randomBool())
+                                .intProperty1(randomLong())
+                                .intProperty2(randomLong())
+                                .intProperty3(randomLong())
+                                .intProperty4(randomLong())
+                                .intProperty5(randomLong())
+                                .stringProperty1(randomString(5, 100))
+                                .stringProperty2(randomString(5, 100))
+                                .stringProperty3(randomString(5, 100))
+                                .stringProperty4(randomString(5, 100))
+                                .stringProperty5(randomString(5, 100))
+                                .unit(randomString(2, 16))
+                                .productId(productId)
+                                .rootProductId(rootProductId)
+                                .quantity(Long.parseLong(randomNumber(1, 1000)))
+                                .build();
+
+                        //printRecord(printer, event);
+                        resultEvents.add(event);
                     }
                 }
             }
         }
 
-        File file = new File("data/accounts.csv");
+        // randomize the order of the events
+        Collections.shuffle(resultEvents);
+        eventWriter.writeEvents(resultEvents);
+        eventWriter.writeAccounts(clientIdToAccountIds);
+
+        //
+        /*try(final CSVPrinter printer = new CSVPrinter(writer, format)) {
+            resultEvents.forEach(e -> {
+                try {
+                    printRecord(printer, e);
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            });
+        }*/
+
+        /*int fileNumber = 1; // Starting file number
+        int writeCount = 0; // Track how many objects have been written to the current file
+        int maxObjectsPerFile = 100000;
+
+        FileWriter fw = null;
+
+        try {
+            for (Map.Entry<String, List<String>> entry : clientIdToAccountIds.entrySet()) {
+                for (String accountId : entry.getValue()) {
+                    // Check if we've reached our limit for the current file
+                    if (writeCount == 0 || writeCount >= maxObjectsPerFile) {
+                        // If we already had a FileWriter open, close it
+                        if (fw != null) {
+                            fw.close();
+                        }
+
+                        // Open a new FileWriter for the next file
+                        fw = new FileWriter("data/accounts" + fileNumber + ".csv");
+                        fw.write("clientId,accountId\n"); // write header for each new file
+                        fileNumber++;
+                        writeCount = 0;
+                    }
+
+                    // Write the current object
+                    fw.write(entry.getKey() + "," + accountId + "\n");
+                    writeCount++;
+                }
+            }
+        } finally {
+            // Ensure that we always close the FileWriter when done
+            if (fw != null) {
+                fw.close();
+            }
+        }*/
+
+        /*File file = new File("data/accounts.csv");
         file.delete();
         file.createNewFile();
         try (FileWriter fw = new FileWriter("data/accounts.csv")) {
@@ -117,7 +168,7 @@ public class EventGenerator {
                 }
                 fw.write(builder.toString());
             }
-        }
+        }*/
     }
 
     private String randomNumber(int min, int max) {
@@ -147,7 +198,7 @@ public class EventGenerator {
                 .toString();
     }
 
-    private CSVFormat createFormat() {
+    /*private CSVFormat createFormat() {
         return CSVFormat.DEFAULT.builder()
                 .setHeader("clientId",
                         "accountId",
@@ -215,5 +266,5 @@ public class EventGenerator {
                 event.getBillingCycleInstanceId(),
                 event.getUnit(),
                 event.getBillingProviderId());
-    }
+    }*/
 }

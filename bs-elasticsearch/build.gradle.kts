@@ -16,7 +16,7 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.22")
 
     implementation("org.springframework.boot:spring-boot-starter-web:3.0.5")
-    //implementation("org.springframework.data:spring-data-elasticsearch:4.0.0.RELEASE")
+    implementation("org.springframework.data:spring-data-elasticsearch:5.1.0")
     implementation("co.elastic.clients:elasticsearch-java:8.6.2")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.12.3")
 

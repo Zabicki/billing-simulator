@@ -1,0 +1,114 @@
+version: "3.8"
+services:
+
+  es1:
+    deploy:
+      resources:
+        limits:
+          memory: 6g
+    container_name: "es1"
+    build:
+      context: elasticsearch/
+      args:
+        ELK_VERSION: ${ELK_VERSION:-8.6.2}
+    volumes:
+      - type: bind
+        source: ./elasticsearch/elasticsearch.yml
+        target: /usr/share/elasticsearch/config/elasticsearch.yml
+        read_only: true
+      #- ${ELASTICSEARCH_DATA:-/data}/es1:/usr/share/elasticsearch/data
+      - type: bind
+        source: ./logs
+        target: /usr/share/elasticsearch/logs/docker-cluster.log
+        read_only: false
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      - node.name=es1
+      - discovery.seed_hosts=es2
+      - cluster.initial_master_nodes=es1,es2
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=false
+      #- "ES_JAVA_OPTS=-Xms${ES_HEAP_SIZE:-2g} -Xmx${ES_HEAP_SIZE:-2g}"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    networks:
+      - esnetwork
+
+  es2:
+    deploy:
+      resources:
+        limits:
+          memory: 6g
+    container_name: "es2"
+    build:
+      context: elasticsearch/
+      args:
+        ELK_VERSION: ${ELK_VERSION:-8.6.2}
+    volumes:
+      - type: bind
+        source: ./elasticsearch/elasticsearch.yml
+        target: /usr/share/elasticsearch/config/elasticsearch.yml
+        read_only: true
+      #- ${ELASTICSEARCH_DATA:-/data}/es2:/usr/share/elasticsearch/data
+    environment:
+      - node.name=es2
+      - discovery.seed_hosts=es1
+      - cluster.initial_master_nodes=es1,es2
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=false
+      #- "ES_JAVA_OPTS=-Xms${ES_HEAP_SIZE:-2g} -Xmx${ES_HEAP_SIZE:-2g}"
+    ports:
+      - "9201:9200"
+      - "9301:9300"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    networks:
+      - esnetwork
+
+  kibana:
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+    container_name: "kibana"
+    build:
+      context: kibana/
+      args:
+        ELK_VERSION: ${ELK_VERSION:-8.6.1}
+    volumes:
+      - type: bind
+        source: ./kibana/kibana.yml
+        target: /usr/share/kibana/config/kibana.yml
+        read_only: true
+    ports:
+      - "5601:5601"
+    depends_on:
+      - es1
+      - es2
+    networks:
+      - esnetwork
+
+  nginx:
+    deploy:
+      resources:
+        limits:
+          memory: 4g
+    container_name: "nginx"
+    build:
+      context: ./nginx
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    networks:
+      - esnetwork
+
+networks:
+  esnetwork:

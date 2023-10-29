@@ -1,5 +1,6 @@
 plugins {
     id("java")
+    id("org.springframework.boot") version "3.0.5" // Or your specific version
 }
 
 group = "org.example"
@@ -25,4 +26,9 @@ dependencies {
 
 tasks.getByName<Test>("test") {
     useJUnitPlatform()
+}
+
+tasks.register("buildDocker", Exec::class) {
+    dependsOn("build")
+    commandLine("docker", "build", "-t", "bs-postgres", ".")
 }

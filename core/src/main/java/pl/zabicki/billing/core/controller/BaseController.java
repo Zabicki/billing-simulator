@@ -7,7 +7,7 @@ public class BaseController {
     protected final String PROCESSING_TIME = "processingTime";
     protected final String COUNT = "count";
 
-    protected final String CURRENT_DATA = "202308181500";
+    protected final String CURRENT_DATA = "202308262043";
 
     protected final ResultStore resultStore = new ResultStore("store.json");
 

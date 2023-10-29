@@ -1,25 +1,27 @@
 package pl.zabicki.billing.elasticsearch.repository;
 
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch.core.BulkRequest;
-import co.elastic.clients.elasticsearch.core.BulkResponse;
-import co.elastic.clients.elasticsearch.core.CountRequest;
-import co.elastic.clients.elasticsearch.core.SearchResponse;
-import co.elastic.clients.elasticsearch.core.search.Hit;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.elasticsearch.annotations.Query;
+import org.springframework.data.elasticsearch.annotations.Routing;
+import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 import org.springframework.stereotype.Repository;
 import pl.zabicki.billing.elasticsearch.model.Event;
 
-import java.io.IOException;
 import java.util.List;
 
 @Repository
-@Slf4j
-public class EventRepo {
+public interface EventRepository extends ElasticsearchRepository<Event, String> {
 
-    @Autowired
-    ElasticsearchClient client;
+    //@Query("{\"bool\": {\"must\": [{\"term\": {\"clientId\": \"?0\"}}, {\"term\": {\"accountId\": \"?1\"}}]}}")
+    Page<Event> findByClientIdAndAccountId(String clientId, String accountId, Pageable pageable);
+
+    @Query("{\"match_all\": {}}")
+    List<Event> findAllEvents();
+
+    void deleteAll();
+
+    /*private final ElasticsearchClient client;
 
     public List<Event> searchEvents(String clientId, String accountId) throws IOException {
         SearchResponse<Event> search = client.search(s -> s
@@ -33,7 +35,7 @@ public class EventRepo {
                                                 .field("accountId")
                                                 .query(accountId)))
                         )
-                ).size(10_000),
+                ).size(10_000), //TODO add pagination instead of limiting the size
                 Event.class);
 
         return search.hits().hits().stream().map(Hit::source).toList();
@@ -62,4 +64,8 @@ public class EventRepo {
             return 0;
         }
     }
+
+    public void truncate() {
+
+    }*/
 }

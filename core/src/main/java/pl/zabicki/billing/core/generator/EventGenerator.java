@@ -10,13 +10,12 @@ import java.util.concurrent.ThreadLocalRandom;
 public class EventGenerator {
 
     Random random = new Random();
-
+    //500kk events
     public static void main(String[] args) throws IOException {
         new EventGenerator().generate(List.of(
-                new Request(10, 1, 500),
-                new Request(10, 3, 100),
-                new Request(10000, 10, 10)
-                //new Request(10_000, 1, 10)
+                new Request(10_000_000, 1, 200), //200kk 2kkk
+                new Request(100_000, 50, 200), //100kk 1kkk
+                new Request(1000, 1_000, 2000) //200kk 2kkk
                 ));
     }
 
@@ -24,15 +23,12 @@ public class EventGenerator {
      * NOTE can generate up to 2 billion events (max int).
      * Generate events for clients and accounts specified by requests.
      * Saves events in csv file
-     * TODO csv files are too big, need to seperate the files, etc. max 50/100 MB per file?
      * Events will be inserted into tested database.
      * Also creates file with clients and accounts. Format for each row: clientId,accountId1,accountId2,...,accountIdn
      * @param requests generation requests specifying number of clients, accounts per clients and events per accounts
      *                 for 1 billing cycle
      */
     public void generate(List<Request> requests) throws IOException {
-        //BufferedWriter writer = Files.newBufferedWriter(Paths.get("data/test.csv"));
-        //CSVFormat format = createFormat();
         Map<String, List<String>> clientIdToAccountIds = new HashMap<>();
         EventWriter eventWriter = new EventWriter();
 
@@ -108,67 +104,6 @@ public class EventGenerator {
         Collections.shuffle(resultEvents);
         eventWriter.writeEvents(resultEvents);
         eventWriter.writeAccounts(clientIdToAccountIds);
-
-        //
-        /*try(final CSVPrinter printer = new CSVPrinter(writer, format)) {
-            resultEvents.forEach(e -> {
-                try {
-                    printRecord(printer, e);
-                } catch (IOException ex) {
-                    throw new RuntimeException(ex);
-                }
-            });
-        }*/
-
-        /*int fileNumber = 1; // Starting file number
-        int writeCount = 0; // Track how many objects have been written to the current file
-        int maxObjectsPerFile = 100000;
-
-        FileWriter fw = null;
-
-        try {
-            for (Map.Entry<String, List<String>> entry : clientIdToAccountIds.entrySet()) {
-                for (String accountId : entry.getValue()) {
-                    // Check if we've reached our limit for the current file
-                    if (writeCount == 0 || writeCount >= maxObjectsPerFile) {
-                        // If we already had a FileWriter open, close it
-                        if (fw != null) {
-                            fw.close();
-                        }
-
-                        // Open a new FileWriter for the next file
-                        fw = new FileWriter("data/accounts" + fileNumber + ".csv");
-                        fw.write("clientId,accountId\n"); // write header for each new file
-                        fileNumber++;
-                        writeCount = 0;
-                    }
-
-                    // Write the current object
-                    fw.write(entry.getKey() + "," + accountId + "\n");
-                    writeCount++;
-                }
-            }
-        } finally {
-            // Ensure that we always close the FileWriter when done
-            if (fw != null) {
-                fw.close();
-            }
-        }*/
-
-        /*File file = new File("data/accounts.csv");
-        file.delete();
-        file.createNewFile();
-        try (FileWriter fw = new FileWriter("data/accounts.csv")) {
-            fw.write("clientId,accountId");
-            fw.write("\n");
-            for (Map.Entry<String, List<String>> entry : clientIdToAccountIds.entrySet()) {
-                StringBuilder builder = new StringBuilder();
-                for (String accountId : entry.getValue()) {
-                    builder.append(entry.getKey()).append(",").append(accountId).append("\n");
-                }
-                fw.write(builder.toString());
-            }
-        }*/
     }
 
     private String randomNumber(int min, int max) {
@@ -197,74 +132,4 @@ public class EventGenerator {
                 .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
                 .toString();
     }
-
-    /*private CSVFormat createFormat() {
-        return CSVFormat.DEFAULT.builder()
-                .setHeader("clientId",
-                        "accountId",
-                        "apInstanceId",
-                        "callingNumber",
-                        "calledNumber",
-                        "callingPrefix",
-                        "calledPrefix",
-                        "eventBeginDate",
-                        "eventEndDate",
-                        "productId",
-                        "rootProductId",
-                        "intProperty1",
-                        "intProperty2",
-                        "intProperty3",
-                        "intProperty4",
-                        "intProperty5",
-                        "stringProperty1",
-                        "stringProperty2",
-                        "stringProperty3",
-                        "stringProperty4",
-                        "stringProperty5",
-                        "booleanProperty1",
-                        "booleanProperty2",
-                        "booleanProperty3",
-                        "booleanProperty4",
-                        "booleanProperty5",
-                        "quantity",
-                        "billingCycleDefId",
-                        "billingCycleInstanceId",
-                        "unit",
-                        "billingProviderId")
-                .build();
-    }
-
-    private void printRecord(CSVPrinter printer, CsvEvent event) throws IOException {
-        printer.printRecord(event.getClientId(),
-                event.getAccountId(),
-                event.getApInstanceId(),
-                event.getCallingNumber(),
-                event.getCalledNumber(),
-                event.getCallingPrefix(),
-                event.getCalledPrefix(),
-                event.getEventBeginDate(),
-                event.getEventEndDate(),
-                event.getProductId(),
-                event.getRootProductId(),
-                event.getIntProperty1(),
-                event.getIntProperty2(),
-                event.getIntProperty3(),
-                event.getIntProperty4(),
-                event.getIntProperty5(),
-                event.getStringProperty1(),
-                event.getStringProperty2(),
-                event.getStringProperty3(),
-                event.getStringProperty4(),
-                event.getStringProperty5(),
-                event.isBooleanProperty1(),
-                event.isBooleanProperty2(),
-                event.isBooleanProperty3(),
-                event.isBooleanProperty4(),
-                event.isBooleanProperty5(),
-                event.getQuantity(),
-                event.getBillingCycleDefId(),
-                event.getBillingCycleInstanceId(),
-                event.getUnit(),
-                event.getBillingProviderId());
-    }*/
 }

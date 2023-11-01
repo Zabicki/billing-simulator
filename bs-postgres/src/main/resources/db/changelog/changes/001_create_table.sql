@@ -36,3 +36,13 @@ CREATE TABLE IF NOT EXISTS "event" (
 
 CREATE INDEX IF NOT EXISTS client_idx ON event (client_Id);
 CREATE INDEX IF NOT EXISTS account_idx ON event (account_Id);
+
+CREATE TABLE IF NOT EXISTS "account" (
+    id bigserial not null,
+    client_Id varchar(255) not null,
+    account_Id varchar(255) not null,
+    PRIMARY KEY (id)
+    );
+
+CREATE INDEX IF NOT EXISTS account_client_idx ON account (client_Id);
+CREATE INDEX IF NOT EXISTS account_account_idx ON account (account_Id);

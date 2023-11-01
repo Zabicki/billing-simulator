@@ -1,6 +1,9 @@
 package pl.zabicki.billing.core.controller;
 
+import pl.zabicki.billing.core.generator.ClientRequest;
 import pl.zabicki.billing.core.result.store.ResultStore;
+
+import java.util.List;
 
 public class BaseController {
 
@@ -23,5 +26,5 @@ public class BaseController {
         return processingTimeMillis / 1000;
     }
 
-    protected record SimulationRequest(String description) {}
+    protected record SimulationRequest(String description, List<ClientRequest> clientRequests) {}
 }

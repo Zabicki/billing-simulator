@@ -3,6 +3,7 @@ package pl.zabicki.billing.postgres;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import pl.zabicki.billing.core.data.model.CsvEvent;
+import pl.zabicki.billing.core.generator.BaseEvent;
 import pl.zabicki.billing.postgres.model.Event;
 
 import java.util.List;
@@ -10,7 +11,7 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class EventConverter {
 
-    public static Event convertEvent(CsvEvent csvEvent) {
+    public static Event convertEvent(BaseEvent csvEvent) {
         Event event = new Event();
         event.setClientId(csvEvent.getClientId());
         event.setAccountId(csvEvent.getAccountId());
@@ -46,8 +47,8 @@ public class EventConverter {
         return event;
     }
 
-    public static List<Event> convertEvents(List<CsvEvent> csvEvents) {
-        return csvEvents.stream()
+    public static List<Event> convertEvents(List<BaseEvent> baseEvents) {
+        return baseEvents.stream()
                 .map(EventConverter::convertEvent)
                 .toList();
     }

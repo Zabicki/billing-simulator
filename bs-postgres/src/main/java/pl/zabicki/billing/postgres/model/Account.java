@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.Hibernate;
+import pl.zabicki.billing.core.generator.EventGenerator;
 
 import java.util.Objects;
 
@@ -24,6 +25,13 @@ public class Account {
     private Long id;
     private String clientId;
     private String accountId;
+
+    public static Account fromAccountInfo(EventGenerator.AccountInfo accountInfo) {
+        Account account = new Account();
+        account.setClientId(accountInfo.clientId());
+        account.setAccountId(accountInfo.accountId());
+        return account;
+    }
 
     @Override
     public boolean equals(Object o) {

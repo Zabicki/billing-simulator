@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import pl.zabicki.billing.core.controller.BaseController;
 import pl.zabicki.billing.core.generator.ClientRequest;
-import pl.zabicki.billing.core.result.store.ResultStore;
 import pl.zabicki.billing.core.result.store.SimulationResult;
 
 import java.io.IOException;

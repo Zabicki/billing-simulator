@@ -2,7 +2,6 @@ package pl.zabicki.billing.postgres;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import pl.zabicki.billing.core.data.model.CsvEvent;
 import pl.zabicki.billing.core.generator.BaseEvent;
 import pl.zabicki.billing.postgres.model.Event;
 

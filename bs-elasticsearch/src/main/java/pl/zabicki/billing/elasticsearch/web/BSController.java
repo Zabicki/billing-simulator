@@ -4,9 +4,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import pl.zabicki.billing.core.controller.BaseController;
+import pl.zabicki.billing.core.generator.ClientRequest;
 import pl.zabicki.billing.core.result.store.SimulationResult;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -21,17 +21,17 @@ public class BSController extends BaseController {
     private final InvoicingService invoicingService;
 
     @GetMapping(value = "invoicing")
-    public String startInvoicing() throws IOException, ExecutionException, InterruptedException {
+    public String startInvoicing() throws ExecutionException, InterruptedException {
         log.info("Invoicing started");
-        long processingTime = invoicingService.startInvoicing(CURRENT_DATA);
+        long processingTime = invoicingService.startInvoicing();
         log.info("Invoicing finished");
         return wrapJson(PROCESSING_TIME, toSeconds(processingTime));
     }
 
-    @GetMapping(value = "synchronization")
-    public String startEventSynchronization() throws IOException {
+    @PostMapping(value = "synchronization")
+    public String startEventSynchronization(@RequestBody List<ClientRequest> clientRequests) {
         log.info("Synchronization started");
-        long processingTime = synchronizationService.synchronize(CURRENT_DATA);
+        long processingTime = synchronizationService.synchronize(clientRequests);
         log.info("Synchronization finished");
         return wrapJson(PROCESSING_TIME, toSeconds(processingTime));
     }
@@ -51,19 +51,20 @@ public class BSController extends BaseController {
     }
 
     @PostMapping("simulation")
-    public void startSimulation(@RequestBody SimulationRequest request) throws IOException, ExecutionException, InterruptedException {
+    public void startSimulation(@RequestBody SimulationRequest request) throws ExecutionException, InterruptedException {
         log.info("Starting simulation. Description: " + request.description());
 
         log.info("Truncating table");
         synchronizationService.truncateEvents();
 
         log.info("Running synchronization");
-        long synchronizationTime = synchronizationService.synchronize(CURRENT_DATA);
+        long synchronizationTime = synchronizationService.synchronize(request.clientRequests());
 
+        // wait for all the documents to be indexed and searchable by ES
         Thread.sleep(5000);
 
         log.info("Running invoicing");
-        long invoicingTime = invoicingService.startInvoicing(CURRENT_DATA);
+        long invoicingTime = invoicingService.startInvoicing();
 
         log.info("Storing results in result store");
         resultStore.saveResult(SimulationResult.builder()

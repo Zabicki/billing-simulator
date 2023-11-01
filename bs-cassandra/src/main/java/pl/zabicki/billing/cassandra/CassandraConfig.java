@@ -17,6 +17,7 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 
+/*
 @Configuration
 @EnableCassandraRepositories(basePackages = "pl.zabicki.billing.cassandra.repository")
 public class CassandraConfig extends AbstractCassandraConfiguration {
@@ -45,11 +46,14 @@ public class CassandraConfig extends AbstractCassandraConfiguration {
         return new String[]{"pl.zabicki.billing.cassandra.model"};
     }
 
-    /*@Bean
+    */
+/*@Bean
     public CqlSessionBuilderCustomizer sessionBuilderCustomizer() throws IOException {
         File f = new File("/home/chris/Work/IdeaProjects/billing-simulator/bs-cassandra/src/main/resources/application.conf");
         String s = Files.readString(Path.of("/home/chris/Work/IdeaProjects/billing-simulator/bs-cassandra/src/main/resources/application.conf"));
         return (builder) -> builder.withConfigLoader(DriverConfigLoader.fromFile(f));
-    }*/
+    }*//*
+
 
 }
+*/

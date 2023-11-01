@@ -3,11 +3,16 @@ package pl.zabicki.billing.cassandra.web;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pl.zabicki.billing.cassandra.EventConverter;
+import pl.zabicki.billing.cassandra.model.Account;
 import pl.zabicki.billing.cassandra.model.Event;
+import pl.zabicki.billing.cassandra.repository.AccountRepository;
 import pl.zabicki.billing.cassandra.repository.EventRepository;
 import pl.zabicki.billing.core.data.model.CsvEvent;
 import pl.zabicki.billing.core.data.reader.DataReader;
 import pl.zabicki.billing.core.data.reader.EventReader;
+import pl.zabicki.billing.core.generator.BaseEvent;
+import pl.zabicki.billing.core.generator.ClientRequest;
+import pl.zabicki.billing.core.generator.EventGenerator;
 import pl.zabicki.billing.core.service.BaseService;
 
 import java.io.IOException;
@@ -23,10 +28,38 @@ import java.util.concurrent.TimeUnit;
 public class SynchronizationService extends BaseService {
 
     @Autowired
-    EventRepository repo;
+    EventRepository eventRepo;
+    @Autowired
+    AccountRepository accountRepo;
     DataReader<CsvEvent> reader = new EventReader();
 
+    public long synchronize(List<ClientRequest> clientRequests) {
+        EventGenerator generator = new EventGenerator();
 
+        List<EventGenerator.AccountInfo> accountInfos = generator.init(clientRequests);
+        List<Account> accounts = accountInfos.stream()
+                .map(Account::fromAccountInfo)
+                .toList();
+
+        accountRepo.saveAll(accounts);
+
+        long totalSaveTime = 0;
+
+        List<BaseEvent> events = generator.generate(10_000);
+        while (!events.isEmpty()) {
+            long start = System.currentTimeMillis();
+            for (BaseEvent event : events) {
+                eventRepo.save(EventConverter.convertEvent(event));
+            }
+            totalSaveTime += System.currentTimeMillis() - start;
+            events = generator.generate(10_000);
+        }
+
+        return totalSaveTime;
+    }
+
+
+/*
     public long synchronize(String dataSet) throws IOException {
         List<Path> eventFiles = getEventFiles(dataSet);
         int batchSize = 1000;
@@ -44,7 +77,7 @@ public class SynchronizationService extends BaseService {
             for (int i = 0; i < iterations; i++) {
                 final List<Event> batch = events.subList(batchSize * i, batchSize * i + batchSize);
                 Future<?> future = executor.submit(() -> {
-                    repo.saveAll(batch);
+                    eventRepo.saveAll(batch);
                 });
                 futures.add(future);
             }
@@ -52,7 +85,7 @@ public class SynchronizationService extends BaseService {
             if (events.size() % batchSize != 0) {
                 final List<Event> lastBatch = events.subList(batchSize * iterations, events.size());
                 Future<?> future = executor.submit(() -> {
-                    repo.saveAll(lastBatch);
+                    eventRepo.saveAll(lastBatch);
                 });
                 futures.add(future);
             }
@@ -81,8 +114,9 @@ public class SynchronizationService extends BaseService {
 
         return totalStop - totalStart;
     }
+*/
 
     public void truncateEvents() {
-        repo.truncate();
+        eventRepo.truncate();
     }
 }

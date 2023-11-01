@@ -1,6 +1,6 @@
 plugins {
     id("java")
-    id("org.springframework.boot") version "3.0.5" // Or your specific version
+    id("org.springframework.boot") version "3.0.5"
 }
 
 group = "org.example"

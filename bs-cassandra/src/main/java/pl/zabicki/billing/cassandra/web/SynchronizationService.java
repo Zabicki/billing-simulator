@@ -1,5 +1,6 @@
 package pl.zabicki.billing.cassandra.web;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pl.zabicki.billing.cassandra.EventConverter;
@@ -26,6 +27,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 @Service
+@Slf4j
 public class SynchronizationService extends BaseService {
 
     @Autowired
@@ -50,6 +52,7 @@ public class SynchronizationService extends BaseService {
         long totalSaveTime = 0;
 
         List<BaseEvent> events = generator.generate(10_000);
+        int batchCounter = 1;
         while (!events.isEmpty()) {
             long start = System.currentTimeMillis();
             int chunkSize = 1250;
@@ -79,6 +82,8 @@ public class SynchronizationService extends BaseService {
             }
             long batchSyncTime = System.currentTimeMillis() - start;
             futures.clear(); // Clear the futures list for the next batch
+            log.info("Synchronized {} events in {}", batchCounter * 10_000, batchSyncTime);
+            batchCounter++;
 
             totalSaveTime += batchSyncTime;
             batchSyncTimes.add(batchSyncTime);

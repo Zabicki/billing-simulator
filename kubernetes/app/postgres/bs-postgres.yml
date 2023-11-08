@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: bs-postgres-lb
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 9000
+    targetPort: 8080
+  selector:
+    app: bs-postgres
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bs-postgres-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bs-postgres
+  revisionHistoryLimit: 2
+  progressDeadlineSeconds: 300
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: bs-postgres
+    spec:
+      containers:
+      - name: bs-postgres-container
+        image: christ00pher/bs-postgres:1.5
+        resources:
+          requests:
+            memory: "8Gi"
+            cpu: "1000m"
+          limits:
+            memory: "12Gi"
+            cpu: "2000m"
+        ports:
+        - containerPort: 8080

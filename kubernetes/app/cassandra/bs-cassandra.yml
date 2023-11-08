@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: bs-cassandra-lb
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 9001
+      targetPort: 8080
+  selector:
+    app: bs-cassandra
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bs-cassandra-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bs-cassandra
+  revisionHistoryLimit: 2
+  progressDeadlineSeconds: 300
+  minReadySeconds: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: bs-cassandra
+    spec:
+      containers:
+        - name: bs-cassandra-container
+          image: christ00pher/bs-cassandra:1.0
+          resources:
+            requests:
+              memory: "8Gi"
+              cpu: "1000m"
+            limits:
+              memory: "12Gi"
+              cpu: "2000m"
+          ports:
+            - containerPort: 8080

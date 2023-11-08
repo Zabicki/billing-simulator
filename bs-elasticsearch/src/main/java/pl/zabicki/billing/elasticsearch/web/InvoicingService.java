@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import pl.zabicki.billing.core.result.store.SimulationResult;
 import pl.zabicki.billing.core.service.BaseService;
 import pl.zabicki.billing.elasticsearch.model.Account;
 import pl.zabicki.billing.elasticsearch.model.Event;

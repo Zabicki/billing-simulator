@@ -2,6 +2,7 @@ package pl.zabicki.billing.elasticsearch.web;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.coyote.Request;
 import org.springframework.web.bind.annotation.*;
 import pl.zabicki.billing.core.controller.BaseController;
 import pl.zabicki.billing.core.generator.ClientRequest;
@@ -67,7 +68,11 @@ public class BSController extends BaseController {
         long invoicingTime = invoicingService.startInvoicing();
 
         log.info("Storing results in result store");
+        RequestStatistics statistics = request.getStatistics();
         resultStore.saveResult(SimulationResult.builder()
+                .clients(statistics.clients())
+                .accounts(statistics.accounts())
+                .events(statistics.events())
                 .synchronizationTime(synchronizationTime)
                 .invoicingTime(invoicingTime)
                 .description(request.description())

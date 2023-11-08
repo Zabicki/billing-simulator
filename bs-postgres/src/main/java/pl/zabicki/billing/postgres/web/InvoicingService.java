@@ -1,8 +1,12 @@
 package pl.zabicki.billing.postgres.web;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import pl.zabicki.billing.core.service.BaseService;
 import pl.zabicki.billing.postgres.model.Account;
 import pl.zabicki.billing.postgres.model.Event;
@@ -26,16 +30,17 @@ public class InvoicingService extends BaseService {
     EventRepository eventRepo;
     @Autowired
     AccountRepository accountRepo;
+    @PersistenceContext
+    EntityManager entityManager;
+    @Autowired
+    InvoicingService self;
 
     public long startInvoicing() throws ExecutionException, InterruptedException {
         int threads = 8;
         ExecutorService executor = Executors.newFixedThreadPool(threads);
-        long totalEvents = 0;
 
         long totalStart = System.currentTimeMillis();
         List<Account> accounts = accountRepo.findAll();
-
-        List<Event> result = Collections.synchronizedList(new LinkedList<>());
 
         List<Future<Void>> futures = new ArrayList<>();
 
@@ -52,7 +57,7 @@ public class InvoicingService extends BaseService {
 
                 Future<Void> future = executor.submit(() -> {
                     for (Account acc : batch) {
-                        result.addAll(eventRepo.findByClientIdAndAccountId(acc.getClientId(), acc.getAccountId()));
+                        self.findEvents(acc);
                     }
                     return null;
                 });
@@ -64,19 +69,20 @@ public class InvoicingService extends BaseService {
         for (Future<Void> future : futures) {
             future.get();
         }
-        totalEvents += result.size();
 
         long totalStop = System.currentTimeMillis();
 
         // Shutdown the executor
         executor.shutdown();
 
-        // Optionally print or return the time taken
-        log.info("Number of accounts: " + accounts.size() +
-                " Number of events: " + totalEvents +
-                " Invoicing time: " + (totalStop - totalStart));
-
         return totalStop - totalStart;
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void findEvents(Account acc) {
+        eventRepo.findByClientIdAndAccountId(acc.getClientId(), acc.getAccountId());
+        entityManager.flush();
+        entityManager.clear();
     }
 
     public long countEvents() {

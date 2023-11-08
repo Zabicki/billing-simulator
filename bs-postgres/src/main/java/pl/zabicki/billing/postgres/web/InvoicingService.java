@@ -47,7 +47,6 @@ public class InvoicingService extends BaseService {
         // Calculate the size of each sub-list
         int batchSize = (accounts.size() + threads - 1) / threads;
 
-
         for (int i = 0; i < threads; i++) {
             int start = i * batchSize;
             int end = Math.min(start + batchSize, accounts.size());

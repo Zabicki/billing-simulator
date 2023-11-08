@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import pl.zabicki.billing.core.controller.BaseController;
 import pl.zabicki.billing.core.generator.ClientRequest;
 import pl.zabicki.billing.core.result.store.SimulationResult;
+import pl.zabicki.billing.core.service.BaseService;
 
 import java.io.IOException;
 import java.util.List;
@@ -33,9 +34,9 @@ public class BSController extends BaseController {
     @PostMapping(value = "synchronization")
     public String startEventSynchronization(@RequestBody List<ClientRequest> clientRequests) {
         log.info("Synchronization started");
-        long processingTime = synchronizationService.synchronize(clientRequests);
+        BaseService.SyncStatistics processingTime = synchronizationService.synchronize(clientRequests);
         log.info("Synchronization finished");
-        return wrapJson(PROCESSING_TIME, toSeconds(processingTime));
+        return wrapJson(PROCESSING_TIME, toSeconds(processingTime.totalSyncTime()));
     }
 
     @GetMapping(value = "count")
@@ -59,15 +60,20 @@ public class BSController extends BaseController {
         synchronizationService.truncateEvents();
 
         log.info("Running synchronization");
-        long synchronizationTime = synchronizationService.synchronize(request.clientRequests());
+        BaseService.SyncStatistics syncStatistics = synchronizationService.synchronize(request.clientRequests());
 
         log.info("Running invoicing");
         long invoicingTime = invoicingService.startInvoicing();
 
         log.info("Storing results in result store");
+        RequestStatistics statistics = request.getStatistics();
         resultStore.saveResult(SimulationResult.builder()
-                .synchronizationTime(synchronizationTime)
+                .clients(statistics.clients())
+                .accounts(statistics.accounts())
+                .events(statistics.events())
+                .synchronizationTime(syncStatistics.totalSyncTime())
                 .invoicingTime(invoicingTime)
+                .batchSyncTime(syncStatistics.batchSyncTime())
                 .description(request.description())
                 .build());
 
